@@ -1,23 +1,224 @@
-# Raspberry-Pi-5-Hailo8-AI-kit
-Panduan penggunaan modul Hailo8 AI Kit pada Raspberry Pi 5 untuk deteksi atau pengenalan obyek visual.
+# HailoSDK 4.23 + Raspberry Pi 5 + Hailo-8 AI Kit  
+YOLOv8 Object Detection (Video & Webcam)
 
-# 1. Instalasi HailoSDK 4.23 untuk Raspberry Pi 5
-Panduan ini menggunakan file **HailoSDK versi 4.23.0** yang *benar-benar diperlukan* untuk Raspberry Pi 5:
+Repository ini berisi dokumentasi lengkap instalasi **HailoSDK 4.23** pada  
+**Raspberry Pi 5**, termasuk:
 
-File yang harus Anda unduh dari portal Hailo:
+- Instalasi driver Hailo PCIe 4.23  
+- Instalasi HailoRT Runtime 4.23 (.deb)  
+- Instalasi Python API Hailo (`hailo_platform`) untuk Python 3.13  
+- Instalasi OpenCV + NumPy  
+- Contoh kode inferensi YOLOv8 (input video & webcam)  
+- Troubleshooting umum  
 
-1. `hailort-pcie-driver_4.23.0_all.deb`  
-2. `hailort_4.23.0_arm64.deb`  
-3. `hailort-4.23.0-cp313-cp313-linux_aarch64.whl`
-
-Repository ini ditulis khusus untuk SDK versi *4.23.0*.
+Repository ini **khusus** untuk **SDK versi 4.23.0**.  
+Tidak kompatibel dengan versi 4.20 atau di bawahnya.
 
 ---
 
-# 1.1. Install Driver PCIe untuk Hailo-8 (4.23.0)
+# 1. Perangkat Keras
 
-Install driver:
+- Raspberry Pi 5 (4GB / 8GB)
+- Hailo-8 AI Acceleration Module (PCIe)
+- Carrier board/PCIe adapter untuk Raspberry Pi 5
+- MicroSD 32GB+
+- Kamera:
+  - USB webcam, atau
+  - CSI camera yang muncul sebagai `/dev/videoX`
+
+---
+
+# 2. Sistem Operasi yang Didukung
+
+- Raspberry Pi OS 64-bit (Bookworm)
+- Kernel default 6.x kompatibel dengan driver PCIe Hailo
+
+---
+
+# 3. Instalasi HailoSDK 4.23 (File Asli)
+
+File yang harus diunduh dari portal Hailo:
+
+1. `hailort-pcie-driver_4.23.0_all.deb`  
+2. `hailort_4.23.0_arm64.deb`  
+3. `hailort-4.23.0-cp313-cp313-linux_aarch64.whl`  
+   (untuk Python **3.13**, default Raspberry Pi OS terbaru)
+
+---
+
+## 3.1. Install Driver PCIe 4.23
 
 ```bash
 sudo dpkg -i hailort-pcie-driver_4.23.0_all.deb
 sudo modprobe hailo_pci
+```
+
+Cek status driver:
+```bash
+lsmod | grep hailo
+```
+
+---
+
+## 3.2. Install HailoRT Runtime 4.23
+
+Runtime berupa paket .deb, install dengan:
+
+```bash
+sudo dpkg -i hailort_4.23.0_arm64.deb
+```
+
+Tes perintah dasar:
+
+```bash
+hailortcli --version
+```
+
+Output normal:
+
+> `hailortcli version 4.23.0`
+
+---
+
+## 3.3. Install Python API (Hailo Platform) untuk Python 3.13
+
+```bash
+pip install hailort-4.23.0-cp313-cp313-linux_aarch64.whl
+```
+
+Cek:
+
+```bash
+python3 - << 'EOF'
+import hailo_platform as h
+print("Hailo Platform Version:", h.__version__)
+EOF
+```
+
+Harus muncul:
+
+> `Hailo Platform Version: 4.23.0`
+
+---
+
+## 3.4. Verifikasi Device Hailo-8
+
+```bash
+hailortcli scan
+```
+
+Output:
+
+> `Hailo Devices:`
+> `Device: 0001:04:00.0`
+
+
+Jika tidak muncul → cek PCIe connector dan driver.
+
+---
+
+# 4. Instalasi OpenCV + NumPy
+
+```bash
+sudo apt install -y python3-opencv libopencv-dev
+python3 -m pip install numpy
+```
+
+Testing:
+
+```bash
+python3 - << 'EOF'
+import cv2, numpy as np
+print("OpenCV:", cv2.__version__)
+print("NumPy:", np.__version__)
+EOF
+```
+
+# 5. Menjalankan YOLOv8 .hef di Hailo SDK 4.23
+
+Download yolov8s.hef dari Hailo Model Zoo, lalu simpan di:
+
+> `~/models/yolov8s.hef`
+
+---
+
+# 6. Struktur Repository
+hailo8-raspberrypi5-yolov8/
+- `README`.md
+- `requirements`.txt
+- samples/
+  - `cars`.mp4
+  - `bikes`.mp4
+  - `motorbikes`.mp4
+  - `peoples`.mp4
+- models/
+  - `yolov8s`.hef
+- src/
+  - `hailo_video_yolo`.py
+  - `hailo_webcam_yolo`.py
+
+---
+
+# 7. Inferensi YOLOv8 dari File Video
+
+```bash
+python3 src/hailo_video_yolo.py models/yolov8s.hef
+```
+
+Hasil:
+
+> `Bounding box`
+> `Label class (person, car, dll)`
+> `FPS dan inference time`
+
+---
+
+# 8. Inferensi YOLOv8 dari Webcam
+
+Default kamera (/dev/video0):
+
+```bash
+python3 src/hailo_webcam_yolo.py models/yolov8s.hef
+```
+
+Jika menggunakan device lain (misalnya /dev/video8):
+
+```bash
+python3 src/hailo_webcam_yolo.py models/yolov8s.hef 8
+```
+
+# 9. Troubleshooting (HailoSDK 4.23)
+###### ❌ `hailortcli` device scan kosong
+
+Solusi:
+
+```bash
+lspci -nn | grep -i hailo
+dmesg | grep -i hailo
+```
+
+Pastikan driver PCIe terinstal.
+
+###### ❌ Python tidak menemukan `hailo_platform`
+- Pastikan `Python 3.13`
+- Pastikan wheel yang digunakan: `cp313-cp313-linux_aarch64`
+
+Cek: 
+
+```bash
+pip list | grep hailo
+```
+
+###### ❌ `Detections selalu 0` (tidak ada bounding box)
+
+Solusi:
+- Preprocess harus RGB uint8, tidak dibagi 255
+- Model .hef harus YOLOv8 COCO
+- Turunkan threshold: `CONF_THRESH` = 0.1
+
+###### ❌ `Error “setting array element with a sequence”`
+
+- Output NMS pada SDK 4.23 adalah ragged array
+- Gunakan decoder per-class seperti script di repo ini.
+
+---
