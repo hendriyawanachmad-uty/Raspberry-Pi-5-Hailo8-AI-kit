@@ -35,7 +35,64 @@ Tidak kompatibel dengan versi 4.20 atau di bawahnya.
 
 ---
 
-# 3. Instalasi HailoSDK 4.23 (File Asli)
+# 3. Mengaktifkan Virtual Environment (Opsional namun Direkomendasikan)
+
+Disarankan untuk menjalankan seluruh proyek ini di dalam **Python virtual environment (venv)**  
+agar dependensi lebih terisolasi dan tidak mengubah paket sistem.
+
+## 3.1. Membuat virtual environment
+
+Jalankan:
+
+```bash
+python3 -m venv venv
+```
+Ini akan membuat folder baru bernama `venv/` di repository Anda.
+
+---
+
+## 3.2. Mengaktifkan virtual environment
+
+```bash
+source venv/bin/activate
+```
+
+Jika berhasil, terminal Anda akan menampilkan awalan:
+
+> `(venv) user@raspberrypi:~`
+
+Artinya venv sudah aktif.
+
+---
+
+## 3.3. Menginstal dependensi di dalam venv
+
+Dengan venv aktif:
+
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Untuk menginstal Python API Hailo:
+
+```bash
+pip install hailort-4.23.0-cp313-cp313-linux_aarch64.whl
+```
+
+---
+
+## 3.4. Menonaktifkan virtual environment
+
+Jika ingin keluar dari venv:
+
+```bash
+deactivate
+```
+
+---
+
+# 4. Instalasi HailoSDK 4.23 (File Asli)
 
 File yang harus diunduh dari portal Hailo:
 
@@ -46,7 +103,7 @@ File yang harus diunduh dari portal Hailo:
 
 ---
 
-## 3.1. Install Driver PCIe 4.23
+## 4.1. Install Driver PCIe 4.23
 
 ```bash
 sudo dpkg -i hailort-pcie-driver_4.23.0_all.deb
@@ -60,7 +117,7 @@ lsmod | grep hailo
 
 ---
 
-## 3.2. Install HailoRT Runtime 4.23
+## 4.2. Install HailoRT Runtime 4.23
 
 Runtime berupa paket .deb, install dengan:
 
@@ -80,7 +137,7 @@ Output normal:
 
 ---
 
-## 3.3. Install Python API (Hailo Platform) untuk Python 3.13
+## 4.3. Install Python API (Hailo Platform) untuk Python 3.13
 
 ```bash
 pip install hailort-4.23.0-cp313-cp313-linux_aarch64.whl
@@ -101,7 +158,7 @@ Harus muncul:
 
 ---
 
-## 3.4. Verifikasi Device Hailo-8
+## 4.4. Verifikasi Device Hailo-8
 
 ```bash
 hailortcli scan
@@ -117,7 +174,7 @@ Jika tidak muncul → cek PCIe connector dan driver.
 
 ---
 
-# 4. Instalasi OpenCV + NumPy
+# 5. Instalasi OpenCV + NumPy
 
 ```bash
 sudo apt install -y python3-opencv libopencv-dev
@@ -134,7 +191,7 @@ print("NumPy:", np.__version__)
 EOF
 ```
 
-# 5. Menjalankan YOLOv8 .hef di Hailo SDK 4.23
+# 6. Menjalankan YOLOv8 .hef di Hailo SDK 4.23
 
 Download yolov8s.hef dari Hailo Model Zoo, lalu simpan di:
 
@@ -142,7 +199,7 @@ Download yolov8s.hef dari Hailo Model Zoo, lalu simpan di:
 
 ---
 
-# 6. Struktur Repository
+# 7. Struktur Repository
 hailo8-raspberrypi5-yolov8/
 - `README`.md
 - `requirements`.txt
@@ -159,7 +216,7 @@ hailo8-raspberrypi5-yolov8/
 
 ---
 
-# 7. Inferensi YOLOv8 dari File Video
+# 8. Inferensi YOLOv8 dari File Video
 
 ```bash
 python3 src/hailo_video_yolo.py models/yolov8s.hef
@@ -173,7 +230,7 @@ Hasil:
 
 ---
 
-# 8. Inferensi YOLOv8 dari Webcam
+# 9. Inferensi YOLOv8 dari Webcam
 
 Default kamera (/dev/video0):
 
@@ -187,7 +244,7 @@ Jika menggunakan device lain (misalnya /dev/video8):
 python3 src/hailo_webcam_yolo.py models/yolov8s.hef 8
 ```
 
-# 9. Troubleshooting (HailoSDK 4.23)
+# 10. Troubleshooting (HailoSDK 4.23)
 ###### ❌ `hailortcli` device scan kosong
 
 Solusi:
